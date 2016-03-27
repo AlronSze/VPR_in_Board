@@ -52,7 +52,7 @@ void RecordVoice::init_record(void)
 
 void RecordVoice::start_record(void)
 {
-    /*
+    /* For board
     int i, arg;
 
     m_fd_dev_r= open("/dev/dsp", O_RDONLY, 0777);
@@ -106,7 +106,7 @@ void RecordVoice::start_record(void)
 
 void RecordVoice::play_record(void)
 {
-    /*
+    /* For board
     int i, arg;
 
     m_fd_dev_w = open("/dev/dsp", O_WRONLY, 0777);

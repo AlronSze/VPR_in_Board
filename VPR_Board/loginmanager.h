@@ -47,7 +47,8 @@ private:
     void storage_file(void);
     QByteArray send_file_name(void);
     void send_file_data(DataPacket datapacket);
-    void delete_file(void);
+    void delete_file_data(void);
+    void delete_dir_file(void);
 };
 
 #endif // LOGINMANAGER_H
