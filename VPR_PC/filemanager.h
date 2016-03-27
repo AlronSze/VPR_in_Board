@@ -29,6 +29,8 @@ private slots:
     void delete_packet();
     void read_port_data();
 
+    void on_pushButton_delete_clicked();
+
 private:
     Ui::FileManager *ui;
 

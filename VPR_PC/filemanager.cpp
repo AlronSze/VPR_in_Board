@@ -12,13 +12,15 @@ FileManager::FileManager(QWidget *parent, QSerialPort *serialport_temp) :
     m_name_flag(false),
     m_file_flag(false)
 {
-    ui->setupUi(this);
     serialport = serialport_temp;
     connect(serialport, SIGNAL(readyRead()), this, SLOT(read_port_data()));
 
     datapacket_r = new DataPacket();
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(delete_packet()));
+
+    ui->setupUi(this);
+    on_pushButton_update_clicked();
 }
 
 FileManager::~FileManager()
@@ -51,15 +53,16 @@ void FileManager::read_port_data()
 
     timer->stop();
 
-    if ((datapacket_r->get_command() == SENDFILE) && m_name_flag)
+    if ((datapacket_r->get_command() == SENDNAME) && m_name_flag)
     {
         m_name_flag = false;
         send_file();
     }
-    else if ((datapacket_r->get_command() == FILEOVER) && m_file_flag)
+    else if ((datapacket_r->get_command() == SENDFILE) && m_file_flag)
     {
         m_file_flag = false;
         QMessageBox::information(this, tr("information"), tr("File saved!         "), QMessageBox::Ok);
+        on_pushButton_update_clicked();
     }
     else if (datapacket_r->get_command() == LISTFILE)
     {
@@ -72,7 +75,12 @@ void FileManager::read_port_data()
     else if (datapacket_r->get_command() == GETFILE)
     {
         get_file();
-        QMessageBox::information(this, tr("information"), tr("File getted!         "), QMessageBox::Ok);
+        QMessageBox::information(this, tr("information"), tr("File is got!         "), QMessageBox::Ok);
+    }
+    else if (datapacket_r->get_command() == DELFILE)
+    {
+        QMessageBox::information(this, tr("information"), tr("File is deleted!         "), QMessageBox::Ok);
+        on_pushButton_update_clicked();
     }
     else
     {
@@ -163,4 +171,17 @@ void FileManager::on_pushButton_get_clicked()
 
     DataPacket datapacket;
     write_port_data(datapacket.pack_data(GETFILE, m_file_name.toLatin1()));
+}
+
+void FileManager::on_pushButton_delete_clicked()
+{
+    if (ui->listWidget->currentItem() == NULL)
+    {
+        QMessageBox::warning(NULL, tr("warning"), tr("You didn't select any files."));
+        return;
+    }
+    m_file_name = ui->listWidget->currentItem()->text();
+
+    DataPacket datapacket;
+    write_port_data(datapacket.pack_data(DELFILE, m_file_name.toLatin1()));
 }
