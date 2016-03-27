@@ -15,11 +15,13 @@ TEMPLATE = app
 SOURCES += main.cpp \
            loginmanager.cpp \
     datapacket.cpp \
-    filemanager.cpp
+    filemanager.cpp \
+    sm4.cpp
 
 HEADERS += loginmanager.h \
     datapacket.h \
-    filemanager.h
+    filemanager.h \
+    sm4.h
 
 FORMS   += loginmanager.ui \
     filemanager.ui
