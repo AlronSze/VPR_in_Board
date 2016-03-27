@@ -6,7 +6,7 @@
 #include <QFile>
 #include <QDebug>
 
-FileManager::FileManager(QWidget *parent, QSerialPort *serialport_temp) :
+FileManager::FileManager(QWidget *parent, QSerialPort *serialport_temp, QByteArray key) :
     QMainWindow(parent),
     ui(new Ui::FileManager),
     m_name_flag(false),
@@ -18,6 +18,14 @@ FileManager::FileManager(QWidget *parent, QSerialPort *serialport_temp) :
     datapacket_r = new DataPacket();
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(delete_packet()));
+
+    for (int i = 0, j = 0; i < 4; j += 4, i++)
+    {
+        m_key[i] = ( key[j] & 0xFF) |
+                ((key[j + 1]  & 0xFF) << 8) |
+                ((key[j + 2]  & 0xFF) << 16) |
+                ((key[j + 3]  & 0xFF) << 24);
+    }
 
     ui->setupUi(this);
     on_pushButton_update_clicked();

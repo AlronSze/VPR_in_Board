@@ -3,7 +3,7 @@
 
 #include "filemanager.h"
 #include "datapacket.h"
-#include "filemanager.h"
+#include "sm4.h"
 
 #include <QMainWindow>
 #include <QMessageBox>
@@ -48,6 +48,7 @@ private:
     QSerialPort *serialport;
     DataPacket  *datapacket_r;
     QTimer      *timer;
+    QByteArray  m_key;
 
     bool m_record_flag;
     bool m_replay_flag;

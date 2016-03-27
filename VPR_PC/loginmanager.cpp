@@ -83,7 +83,7 @@ void LoginManager::read_port_data()
         {
             QMessageBox::information(this, tr("information"), tr("Login over!         "), QMessageBox::Ok);
             serialport->disconnect();
-            FileManager *filemanager = new FileManager(0, serialport);
+            FileManager *filemanager = new FileManager(0, serialport, m_key);
             filemanager->show();
             this->close();
         }
@@ -183,6 +183,7 @@ void LoginManager::on_pushButton_login_clicked()
 
         QString final_str = get_md5(acct_str + pwd_str);
         QByteArray packet_data = final_str.toLatin1();
+        m_key = get_md5(pwd_str + acct_str).toLatin1();
 
         ui->pushButton_record->setEnabled(false);
         ui->pushButton_login->setEnabled(false);
