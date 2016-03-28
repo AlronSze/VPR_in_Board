@@ -74,7 +74,8 @@ void FileManager::read_port_data()
     }
     else if (datapacket_r->get_command() == LISTFILE)
     {
-        QString one_file = datapacket_r->get_byte_array();
+        SM4 sm4(m_key);
+        QString one_file = sm4.decrypt(datapacket_r->get_byte_array());
         ui->listWidget->addItem(one_file);
 
         DataPacket datapacket;
@@ -133,8 +134,10 @@ void FileManager::on_pushButton_storage_clicked()
     QFileInfo fileinfo = QFileInfo(file);
     QString file_name = fileinfo.fileName();
 
+    SM4 sm4(m_key);
+
     DataPacket datapacket;
-    write_port_data(datapacket.pack_data(SENDNAME, file_name.toLatin1()));
+    write_port_data(datapacket.pack_data(SENDNAME, sm4.encrypt(file_name.toLatin1())));
 }
 
 void FileManager::send_file()
@@ -147,15 +150,24 @@ void FileManager::send_file()
     QByteArray file_data = file.readAll();
     file.close();
 
+    SM4 sm4(m_key);
+
     DataPacket datapacket;
-    write_port_data(datapacket.pack_data(SENDFILE, file_data));
+    write_port_data(datapacket.pack_data(SENDFILE, sm4.encrypt(file_data)));
 }
 
 void FileManager::get_file()
 {
+    SM4 sm4(m_key);
+    QDir dir(".\\file\\");
+    if (!dir.exists())
+    {
+        QDir dir2(".");
+        dir2.mkdir("file");
+    }
     QFile file(".\\file\\" + m_file_name);
     file.open(QIODevice::WriteOnly);
-    file.write(datapacket_r->get_byte_array());
+    file.write(sm4.decrypt(datapacket_r->get_byte_array()));
     file.close();
 
     m_file_name = "";
@@ -177,8 +189,10 @@ void FileManager::on_pushButton_get_clicked()
     }
     m_file_name = ui->listWidget->currentItem()->text();
 
+    SM4 sm4(m_key);
+
     DataPacket datapacket;
-    write_port_data(datapacket.pack_data(GETFILE, m_file_name.toLatin1()));
+    write_port_data(datapacket.pack_data(GETFILE, sm4.encrypt(m_file_name.toLatin1())));
 }
 
 void FileManager::on_pushButton_delete_clicked()
@@ -190,6 +204,8 @@ void FileManager::on_pushButton_delete_clicked()
     }
     m_file_name = ui->listWidget->currentItem()->text();
 
+    SM4 sm4(m_key);
+
     DataPacket datapacket;
-    write_port_data(datapacket.pack_data(DELFILE, m_file_name.toLatin1()));
+    write_port_data(datapacket.pack_data(DELFILE, sm4.encrypt(m_file_name.toLatin1())));
 }

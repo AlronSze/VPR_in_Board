@@ -182,17 +182,28 @@ QByteArray SM4::convert_to_8(uint32_t *input, uint32_t len)
 QByteArray SM4::encrypt(QByteArray input)
 {
     uint32_t input_len = input.length();
-    uint8_t remain  = input_len % 4;
-    uint8_t remain2;
+    uint8_t remain, remain2;
     uint32_t new_len, final_len;
     uint32_t *in_data32, *out_data32;
+    QByteArray len_info, final_input;
+
+    len_info.resize(4);
+    len_info[0] = (input_len & 0x000000FF);
+    len_info[1] = (input_len & 0x0000FF00) >> 8;
+    len_info[2] = (input_len & 0x00FF0000) >> 16;
+    len_info[3] = (input_len & 0xFF000000) >> 24;
+
+    final_input = len_info + input;
+    input_len += 4;
+
+    remain  = input_len % 4;
     if (remain != 0)
     {
         new_len = input_len + 4 - remain;
-        input.resize(new_len);
+        final_input.resize(new_len);
         for (uint8_t i = 0; i < (4 - remain); i++)
         {
-            input[input_len + i] = 0x00;
+            final_input[input_len + i] = 0x00;
         }
     }
     else
@@ -204,17 +215,21 @@ QByteArray SM4::encrypt(QByteArray input)
     if (remain2 != 0)
     {
         final_len = new_len + 16 - remain2;
-        input.resize(final_len);
+        final_input.resize(final_len);
         for (uint8_t i = 0; i < (16 - remain2); i++)
         {
-            input[new_len + i] = 0x00;
+            final_input[new_len + i] = 0x00;
         }
+    }
+    else
+    {
+        final_len = new_len;
     }
 
     in_data32 = new uint32_t [final_len / 4];
     out_data32 = new uint32_t [final_len / 4];
 
-    convert_to_32(in_data32, input, final_len);
+    convert_to_32(in_data32, final_input, final_len);
     encode(in_data32, out_data32, final_len / 4);
     QByteArray output = convert_to_8(out_data32, final_len / 4);
 
@@ -228,16 +243,25 @@ QByteArray SM4::decrypt(QByteArray input)
 {
     uint32_t *in_data32, *out_data32;
     uint32_t input_len = input.length();
+    uint32_t real_len = 0;
+    QByteArray output, final_output;
 
     in_data32 = new uint32_t [input_len / 4];
     out_data32 = new uint32_t [input_len / 4];
 
     convert_to_32(in_data32, input, input_len);
     decode(in_data32, out_data32, input_len / 4);
-    QByteArray output = convert_to_8(out_data32, input_len / 4);
+    output = convert_to_8(out_data32, input_len / 4);
+
+    real_len = (output[0] & 0xFF) |
+            ((output[1] & 0xFF) << 8) |
+            ((output[2] & 0xFF) << 16) |
+            ((output[3] & 0xFF) << 24);
+    output.resize(real_len + 4);
+    final_output = output.right(real_len);
 
     delete [] in_data32;
     delete [] out_data32;
 
-    return output;
+    return final_output;
 }
