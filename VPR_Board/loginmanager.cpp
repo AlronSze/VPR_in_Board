@@ -147,7 +147,7 @@ void LoginManager::read_port_data(void)
 bool LoginManager::start_login()
 {
     QFile file("/home/al/Desktop/VPR_Board-build-desktop-Qt_4_8_5__x11__Release/file/aaa"); // For PC debug
-    // QDir dir("/VPR/file/aaa"); // For board
+    // QFile file("/VPR/file/aaa"); // For board
     if(!file.exists())
     {
         QMessageBox *messageBox = new QMessageBox(QMessageBox::Warning, tr("Warning"), tr("No register!"), NULL, this);
@@ -189,12 +189,12 @@ bool LoginManager::start_reg()
     if (!dir.exists())
     {
         QDir dir2("/home/al/Desktop/VPR_Board-build-desktop-Qt_4_8_5__x11__Release"); // For PC debug
-        // QDir dir("/VPR"); // For board
+        // QDir dir2("/VPR"); // For board
         dir2.mkdir("file");
     }
 
     QFile file("/home/al/Desktop/VPR_Board-build-desktop-Qt_4_8_5__x11__Release/file/aaa"); // For PC debug
-    // QDir dir("/VPR/file/aaa"); // For board
+    // QFile file("/VPR/file/aaa"); // For board
     if(file.exists())
     {
         QMessageBox *messageBox = new QMessageBox(QMessageBox::Warning, tr("Warning"), tr("Already register!"), NULL, this);
@@ -317,7 +317,7 @@ QByteArray LoginManager::send_file_name()
     if (!dir.exists())
     {
         QDir dir2("/home/al/Desktop/VPR_Board-build-desktop-Qt_4_8_5__x11__Release/file"); // For PC debug
-        // QDir dir("/VPR/file"); // For board
+        // QDir dir2("/VPR/file"); // For board
         dir2.mkdir("data");
     }
 
@@ -344,7 +344,7 @@ void LoginManager::delete_dir_file()
     if (!dir.exists())
     {
         QDir dir2("/home/al/Desktop/VPR_Board-build-desktop-Qt_4_8_5__x11__Release/file"); // For PC debug
-        // QDir dir("/VPR/file"); // For board
+        // QDir dir2("/VPR/file"); // For board
         dir2.mkdir("data");
         return;
     }
