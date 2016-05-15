@@ -3,15 +3,17 @@
 
 #include <QByteArray>
 
-#define RECORD   0x11111111
-#define REPLAY   0x22222222
-#define LOGIN    0x33333333
-#define REGISTER 0x44444444
-#define SENDNAME 0x55555555
-#define SENDFILE 0x66666666
-#define LISTFILE 0x77777777
-#define GETFILE  0x88888888
-#define DELFILE  0x99999999
+#define RECORD      0x11111111
+#define REPLAY      0x22222222
+#define LOGIN       0x33333333
+#define REGISTER    0x44444444
+#define SENDNAME    0x55555555
+#define SENDFILE    0x66666666
+#define LISTFILE    0x77777777
+#define GETFILE     0x88888888
+#define DELFILE     0x99999999
+#define KEYEXCHANGE 0x10101010
+#define EXITTASK    0x12121212
 
 #define CONTINUE 0
 #define ERROR    1

@@ -12,7 +12,8 @@
 LoginManager::LoginManager(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::LoginManager),
-    m_file_index(0)
+    m_file_index(0),
+    m_file_begin(false)
 {
     recordvoice = new RecordVoice();
     init_port();
@@ -83,6 +84,11 @@ void LoginManager::read_port_data(void)
         start_replay();
         write_port_data(datapacket_s.pack_data(REPLAY, NULL));
     }
+    else if (datapacket_r->get_command() == KEYEXCHANGE)
+    {
+        // create_rsa();
+        write_port_data(datapacket_s.pack_data(KEYEXCHANGE, NULL));
+    }
     else if (datapacket_r->get_command() == LOGIN)
     {
         QByteArray reply("O");
@@ -90,6 +96,7 @@ void LoginManager::read_port_data(void)
         if (start_login())
         {
             write_port_data(datapacket_s.pack_data(LOGIN, reply));
+            m_file_begin = true;
         }
         else
         {
@@ -109,32 +116,43 @@ void LoginManager::read_port_data(void)
             write_port_data(datapacket_s.pack_data(REGISTER, reply_error));
         }
     }
-    else if (datapacket_r->get_command() == SENDNAME)
+    else if (datapacket_r->get_command() == EXITTASK)
     {
-        create_file();
-        write_port_data(datapacket_s.pack_data(SENDNAME, NULL));
+        m_file_begin = false;
     }
-    else if (datapacket_r->get_command() == SENDFILE)
+    else if (m_file_begin)
     {
-        storage_file();
-        write_port_data(datapacket_s.pack_data(SENDFILE, NULL));
-    }
-    else if (datapacket_r->get_command() == LISTFILE)
-    {
-        QByteArray file_name = send_file_name();
-        if (!file_name.isEmpty())
+        if (datapacket_r->get_command() == SENDNAME)
         {
-            write_port_data(datapacket_s.pack_data(LISTFILE, file_name));
+            create_file();
+            write_port_data(datapacket_s.pack_data(SENDNAME, NULL));
         }
-    }
-    else if (datapacket_r->get_command() == GETFILE)
-    {
-        send_file_data(datapacket_s);
-    }
-    else if (datapacket_r->get_command() == DELFILE)
-    {
-        delete_file_data();
-        write_port_data(datapacket_s.pack_data(DELFILE, NULL));
+        else if (datapacket_r->get_command() == SENDFILE)
+        {
+            storage_file();
+            write_port_data(datapacket_s.pack_data(SENDFILE, NULL));
+        }
+        else if (datapacket_r->get_command() == LISTFILE)
+        {
+            QByteArray file_name = send_file_name();
+            if (!file_name.isEmpty())
+            {
+                write_port_data(datapacket_s.pack_data(LISTFILE, file_name));
+            }
+        }
+        else if (datapacket_r->get_command() == GETFILE)
+        {
+            send_file_data(datapacket_s);
+        }
+        else if (datapacket_r->get_command() == DELFILE)
+        {
+            delete_file_data();
+            write_port_data(datapacket_s.pack_data(DELFILE, NULL));
+        }
+        else
+        {
+            qDebug() << "No Match!";
+        }
     }
     else
     {
@@ -162,8 +180,15 @@ bool LoginManager::start_login()
     QByteArray info = file.readAll();
     file.close();
 
+    // info = rsa_decrypt(info);
+
     if (info == datapacket_r->get_byte_array())
     {
+        /* For board
+        MFCC mfcc;
+        mfcc.StartMFCC(false);
+        */
+
         QMessageBox *messageBox = new QMessageBox(QMessageBox::Information, tr("Information"), tr("Login successful!"), NULL, this);
         messageBox->show();
         QTimer *timer = new QTimer(this);
@@ -213,7 +238,7 @@ bool LoginManager::start_reg()
 
     /* For board
     MFCC mfcc;
-    mfcc.StartMFCC();
+    mfcc.StartMFCC(true);
     */
 
     QMessageBox *messageBox = new QMessageBox(QMessageBox::Information, tr("Information"), tr("Register successful!"), NULL, this);

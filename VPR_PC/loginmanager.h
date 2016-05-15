@@ -40,6 +40,7 @@ private slots:
 
     void read_port_data();
     void delete_packet();
+    void board_no_responce();
 
 private:
     Ui::LoginManager *ui;
@@ -47,15 +48,20 @@ private:
     FileManager *filemanager;
     QSerialPort *serialport;
     DataPacket  *datapacket_r;
-    QTimer      *timer;
+    QTimer      *timer, *timer2;
     QByteArray  m_key;
 
+    bool m_open_flag;
     bool m_record_flag;
     bool m_replay_flag;
     bool m_login_flag;
     bool m_reg_flag;
+    bool m_rsa_key_flag;
+    bool m_is_record;
 
     void write_port_data(QByteArray data);
+    void start_login(void);
+    void start_register(void);
     bool match_info(QString acct_str, QString pwd_str);
     QString get_md5(QString origin_str, QString md5_salt = SALT);
 };

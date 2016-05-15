@@ -35,8 +35,11 @@ private:
     double GetDeltas(double *pCn, int pOrder);
     void GetMFCC(double *pOriVoice, int pSampleSize);
 
+    bool m_GMM_result;
+    bool m_GMM_option;
+
 public:
-    void StartMFCC(void);
+    bool StartMFCC(bool pOption);
 };
 
 #endif // MFCC_H

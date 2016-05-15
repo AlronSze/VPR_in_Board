@@ -4,8 +4,8 @@
 #include <QTimer>
 #include <unistd.h>
 #include <fcntl.h>
-#include <sys/ioctl.h>
-#include <linux/soundcard.h>
+// #include <sys/ioctl.h>
+// #include <linux/soundcard.h>
 
 #define LENGTH    5
 #define RATE      8000

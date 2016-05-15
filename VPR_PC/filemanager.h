@@ -28,11 +28,11 @@ private slots:
     void on_pushButton_storage_clicked();
     void on_pushButton_update_clicked();
     void on_pushButton_get_clicked();
+    void on_pushButton_delete_clicked();
+    void on_pushButton_exit_clicked();
 
     void delete_packet();
     void read_port_data();
-
-    void on_pushButton_delete_clicked();
 
 private:
     Ui::FileManager *ui;

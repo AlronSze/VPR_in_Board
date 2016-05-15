@@ -5,7 +5,8 @@
 #-------------------------------------------------
 
 QT       += core gui
-CONFIG   += serialport
+QT       += serialport # For PC debug
+#CONFIG  += serialport # For board
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -17,12 +18,14 @@ SOURCES += main.cpp \
            loginmanager.cpp \
            recordvoice.cpp \
     mfcc.cpp \
-    datapacket.cpp
+    datapacket.cpp \
+    gmm.cpp
 
 HEADERS += loginmanager.h \
            recordvoice.h \
     mfcc.h \
-    datapacket.h
+    datapacket.h \
+    gmm.h
 
 FORMS   += loginmanager.ui
 

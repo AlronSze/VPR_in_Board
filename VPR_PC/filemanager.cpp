@@ -209,3 +209,10 @@ void FileManager::on_pushButton_delete_clicked()
     DataPacket datapacket;
     write_port_data(datapacket.pack_data(DELFILE, sm4.encrypt(m_file_name.toLatin1())));
 }
+
+void FileManager::on_pushButton_exit_clicked()
+{
+    DataPacket datapacket;
+    write_port_data(datapacket.pack_data(EXITTASK, NULL));
+    this->close();
+}

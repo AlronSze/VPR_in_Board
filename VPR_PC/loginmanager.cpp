@@ -7,10 +7,12 @@
 LoginManager::LoginManager(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::LoginManager),
+    m_open_flag(false),
     m_record_flag(false),
     m_replay_flag(false),
     m_login_flag(false),
-    m_reg_flag(false)
+    m_reg_flag(false),
+    m_is_record(false)
 {
     ui->setupUi(this);
     on_pushButton_update_clicked();
@@ -26,6 +28,12 @@ void LoginManager::delete_packet()
     delete datapacket_r;
     datapacket_r = new DataPacket();
     timer->stop();
+}
+
+void LoginManager::board_no_responce()
+{
+    timer2->stop();
+    QMessageBox::warning(this, tr("warning"), tr("Board no responce!\nPlease examine your board."), QMessageBox::Ok);
 }
 
 void LoginManager::read_port_data()
@@ -46,9 +54,21 @@ void LoginManager::read_port_data()
 
     timer->stop();
 
-    if ((datapacket_r->get_command() == RECORD) && m_record_flag)
+    if ((datapacket_r->get_command() == KEYEXCHANGE)&& m_open_flag)
+    {
+        timer2->stop();
+        m_open_flag = false;
+        // rsa_set_key(datapacket_r->get_byte_array());
+        m_rsa_key_flag = true;
+
+        ui->pushButton_update->setEnabled(false);
+        ui->pushButton_open->setEnabled(false);
+        ui->pushButton_record->setEnabled(true);
+    }
+    else if ((datapacket_r->get_command() == RECORD) && m_record_flag)
     {
         m_record_flag = false;
+        m_is_record = true;
         ui->pushButton_record->setText("Record Start");
         ui->pushButton_record->setEnabled(true);
         ui->pushButton_login ->setEnabled(true);
@@ -68,7 +88,7 @@ void LoginManager::read_port_data()
         ui->pushButton_exit->setEnabled(true);
         QMessageBox::information(this, tr("information"), tr("Replay over!         "), QMessageBox::Ok);
     }
-    else if ((datapacket_r->get_command() == LOGIN) && m_login_flag)
+    else if ((datapacket_r->get_command() == LOGIN) && m_login_flag & m_rsa_key_flag)
     {
         m_login_flag = false;
         ui->pushButton_login->setText("Login");
@@ -81,6 +101,7 @@ void LoginManager::read_port_data()
         QByteArray judge("O");
         if (datapacket_r->get_byte_array() == judge)
         {
+            m_is_record = false;
             QMessageBox::information(this, tr("information"), tr("Login over!         "), QMessageBox::Ok);
             serialport->disconnect();
             FileManager *filemanager = new FileManager(0, serialport, m_key);
@@ -92,7 +113,7 @@ void LoginManager::read_port_data()
             QMessageBox::warning(this, tr("warning"), tr("Login Error!         "), QMessageBox::Ok);
         }
     }
-    else if ((datapacket_r->get_command() == REGISTER) && m_reg_flag)
+    else if ((datapacket_r->get_command() == REGISTER) && m_reg_flag && m_rsa_key_flag)
     {
         m_reg_flag = false;
         ui->pushButton_reg->setText("Register");
@@ -173,67 +194,86 @@ void LoginManager::on_checkBox_showPwd_clicked()
 
 void LoginManager::on_pushButton_login_clicked()
 {
-    QString acct_str(ui->lineEdit_acct->text());
-    QString pwd_str(ui->lineEdit_pwd->text());
-
-    if (match_info(acct_str, pwd_str))
+    if (m_is_record)
     {
-        acct_str = get_md5(acct_str.toLower());
-        pwd_str  = get_md5(pwd_str);
+        QString acct_str(ui->lineEdit_acct->text());
+        QString pwd_str(ui->lineEdit_pwd->text());
 
-        QString final_str = get_md5(acct_str + pwd_str);
-        QByteArray packet_data = final_str.toLatin1();
-        m_key = get_md5(pwd_str + acct_str).toLatin1();
+        if (match_info(acct_str, pwd_str))
+        {
+            acct_str = get_md5(acct_str.toLower());
+            pwd_str  = get_md5(pwd_str);
 
-        ui->pushButton_record->setEnabled(false);
-        ui->pushButton_login->setEnabled(false);
-        ui->pushButton_reg->setEnabled(false);
-        ui->pushButton_replay->setEnabled(false);
-        ui->pushButton_exit->setEnabled(false);
-        ui->pushButton_login->setText("Logining...");
+            QString final_str = get_md5(acct_str + pwd_str);
+            QByteArray packet_data = final_str.toLatin1();
+            m_key = get_md5(pwd_str + acct_str).toLatin1();
 
-        DataPacket datapacket;
-        write_port_data(datapacket.pack_data(LOGIN, packet_data));
-        m_login_flag = true;
+            ui->pushButton_record->setEnabled(false);
+            ui->pushButton_login->setEnabled(false);
+            ui->pushButton_reg->setEnabled(false);
+            ui->pushButton_replay->setEnabled(false);
+            ui->pushButton_exit->setEnabled(false);
+            ui->pushButton_login->setText("Logining...");
+
+            DataPacket datapacket;
+            write_port_data(datapacket.pack_data(LOGIN, packet_data));
+            m_login_flag = true;
+        }
+        else
+        {
+            QMessageBox::warning(this, tr("Warning!"), tr("Input error!"), QMessageBox::Ok);
+        }
     }
     else
     {
-        QMessageBox::warning(this, tr("Warning!"), tr("Input error!"), QMessageBox::Ok);
+        QMessageBox::warning(this, tr("Warning!"), tr("Haven't recorded!"), QMessageBox::Ok);
     }
 }
 
 void LoginManager::on_pushButton_reg_clicked()
 {
-    QString acct_str(ui->lineEdit_acct->text());
-    QString pwd_str(ui->lineEdit_pwd->text());
-
-    if (match_info(acct_str, pwd_str))
+    if (m_is_record)
     {
-        acct_str = get_md5(acct_str.toLower());
-        pwd_str  = get_md5(pwd_str);
+        QString acct_str(ui->lineEdit_acct->text());
+        QString pwd_str(ui->lineEdit_pwd->text());
 
-        QString final_str = get_md5(acct_str + pwd_str);
-        QByteArray packet_data = final_str.toLatin1();
+        if (match_info(acct_str, pwd_str))
+        {
+            acct_str = get_md5(acct_str.toLower());
+            pwd_str  = get_md5(pwd_str);
 
-        ui->pushButton_record->setEnabled(false);
-        ui->pushButton_login->setEnabled(false);
-        ui->pushButton_reg->setEnabled(false);
-        ui->pushButton_replay->setEnabled(false);
-        ui->pushButton_exit->setEnabled(false);
-        ui->pushButton_reg->setText("Registering...");
+            QString final_str = get_md5(acct_str + pwd_str);
+            QByteArray packet_data = final_str.toLatin1();
 
-        DataPacket datapacket;
-        write_port_data(datapacket.pack_data(REGISTER, packet_data));
-        m_reg_flag = true;
+            ui->pushButton_record->setEnabled(false);
+            ui->pushButton_login->setEnabled(false);
+            ui->pushButton_reg->setEnabled(false);
+            ui->pushButton_replay->setEnabled(false);
+            ui->pushButton_exit->setEnabled(false);
+            ui->pushButton_reg->setText("Registering...");
+
+            DataPacket datapacket;
+            write_port_data(datapacket.pack_data(REGISTER, packet_data));
+            m_reg_flag = true;
+        }
+        else
+        {
+            QMessageBox::warning(this, tr("Warning!"), tr("Input error!"), QMessageBox::Ok);
+        }
     }
     else
     {
-        QMessageBox::warning(this, tr("Warning!"), tr("Input error!"), QMessageBox::Ok);
+        QMessageBox::warning(this, tr("Warning!"), tr("Haven't recorded!"), QMessageBox::Ok);
     }
 }
 
 void LoginManager::on_pushButton_exit_clicked()
 {
+    if (m_rsa_key_flag)
+    {
+        DataPacket datapacket;
+        write_port_data(datapacket.pack_data(EXITTASK, NULL));
+    }
     this->close();
 }
 
@@ -304,8 +344,10 @@ void LoginManager::on_pushButton_open_clicked()
     datapacket_r = new DataPacket();
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(delete_packet()));
+    timer2 = new QTimer(this);
+    connect(timer2, SIGNAL(timeout()), this, SLOT(board_no_responce()));
+    timer2->start(3000);
 
-    ui->pushButton_update->setEnabled(false);
-    ui->pushButton_open->setEnabled(false);
-    ui->pushButton_record->setEnabled(true);
+    DataPacket datapacket;
+    write_port_data(datapacket.pack_data(KEYEXCHANGE, NULL));
 }

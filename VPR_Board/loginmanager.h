@@ -35,6 +35,7 @@ private:
     DataPacket  *datapacket_r;
     QString      m_file_name;
     unsigned int m_file_index;
+    bool         m_file_begin;
 
     void init_port(void);
     void write_port_data(QByteArray data);

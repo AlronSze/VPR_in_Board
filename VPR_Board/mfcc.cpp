@@ -5,6 +5,7 @@
 #include <string.h>
 #include <math.h>
 #include "mfcc.h"
+#include "gmm.h"
 
 #define FILTER_NUM 24
 #define DCT_ORDER  13
@@ -57,15 +58,7 @@ void MFCC::FrameBlocking(double *pEmpVoice, FRAME *pFrameVoice, int pFrameNum, i
     double cn[DCT_ORDER];
     double dt1[DCT_ORDER - 4];
     double dt2[DCT_ORDER - 8];
-    double mfcc[DCT_ORDER + (DCT_ORDER - 4) + (DCT_ORDER - 8)];
-
-    FILE *file;
-    char str[32];
-
-    if ((file = fopen("/VPR/mfcc.txt", "w")) == NULL)
-    {
-        printf ("open error!");
-    }
+    double mfcc[pFrameNum][DCT_ORDER + (DCT_ORDER - 4) + (DCT_ORDER - 8) + 1];
 
     for (i = 0; i < pFrameNum; i++)
     {
@@ -106,22 +99,22 @@ void MFCC::FrameBlocking(double *pEmpVoice, FRAME *pFrameVoice, int pFrameNum, i
         {
             if (k < DCT_ORDER)
             {
-                mfcc[k] = cn[k];
+                mfcc[i][k] = cn[k];
             }
             else if (k < (DCT_ORDER + (DCT_ORDER - 4)))
             {
-                mfcc[k] = dt1[k - DCT_ORDER];
+                mfcc[i][k] = dt1[k - DCT_ORDER];
             }
             else if (k < (DCT_ORDER + (DCT_ORDER - 4) + (DCT_ORDER - 8)))
             {
-                mfcc[k] = dt2[k - DCT_ORDER - (DCT_ORDER - 4)];
+                mfcc[i][k] = dt2[k - DCT_ORDER - (DCT_ORDER - 4)];
             }
-            sprintf(str, "%lf ", mfcc[k]);
-            fwrite(str, sizeof(unsigned char), strlen(str), file);
         }
-        sprintf(str, "%lf\n", oneFrameEnergy);
-        fwrite(str, sizeof(unsigned char), strlen(str), file);
+        mfcc[i][k] = oneFrameEnergy;
     }
+
+    GMM gmm;
+    m_GMM_result = gmm.startGMM(mfcc, pFrameNum, m_GMM_option);
 }
 
 void MFCC::HammingWindow(double *pFrameData, int pFrameLen, int index)
@@ -293,13 +286,15 @@ void MFCC::GetMFCC(double *pOriVoice, int pSampleSize)
     free(frameVoice);
 }
 
-void MFCC::StartMFCC()
+bool MFCC::StartMFCC(bool pOption)
 {
     double *test;
     char tempLow, tempHigh;
     FILE *file;
     int fileLen, inputLen;
     int i;
+
+    m_GMM_option = pOption;
 
     if ((file = fopen("/VPR/sound.wav", "rb")) == NULL)
     {
@@ -326,6 +321,11 @@ void MFCC::StartMFCC()
     }
 
     GetMFCC(test, inputLen);
-
     free(test);
+
+    if (!m_GMM_result) {
+        return false;
+    }
+
+    return true;
 }
