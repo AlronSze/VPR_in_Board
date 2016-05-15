@@ -2,12 +2,14 @@
 #define GMM_H
 
 #include <QObject>
+#include <QByteArray>
 
 #define D                  28
 #define M                  16
 #define _2PI               6.2831853L
 #define DIFF_GMM_VALUE     1
 #define DIFF_CENTER_VALUE  1
+#define GMM_THRESHOLD      1.1
 
 typedef struct GMMStruct {
     int m;
@@ -38,6 +40,10 @@ private:
     double GMM_diff(GMM_STRUCT * gmm1, GMM_STRUCT * gmm2);
     double getDistance(double * p1, double * p2);
     double GMM_density(GMM_STRUCT * pGMM, double * X, int index);
+    void GMM_set_file(double pResult);
+    double GMM_get_file(void);
+    int char_to_int(QByteArray pChar);
+
 public:
     bool startGMM(double pMFCC[][D], int pNum,bool pOption);
 };

@@ -1,4 +1,5 @@
 #include "gmm.h"
+#include <QFile>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -530,16 +531,74 @@ int GMM::GMM_identify(double X[][D], double * value, GMM_STRUCT * pGMM, int fram
     return 1;
 }
 
+int GMM::char_to_int(QByteArray pChar)
+{
+    int num = pChar.size();
+    int result_int;
+    char result_char[32];
+
+    for (int i = 0; i < num; i++)
+    {
+        result_char[i] = pChar.at(i);
+    }
+    result_int = atoi(result_char);
+
+    return result_int;
+}
+
+void GMM::GMM_set_file(double pResult)
+{
+    QString file_name = "/VPR/file/gmm.txt";
+    char result_str[32];
+    if (QFile::exists(file_name))
+    {
+        QFile::remove(file_name);
+    }
+    QFile file(file_name);
+    file.open(QIODevice::WriteOnly);
+    sprintf(result_str, "%d@", (int)pResult);
+    file.write(result_str);
+    file.close();
+}
+
+double GMM::GMM_get_file(void)
+{
+    QString file_name = "/VPR/file/gmm.txt";
+    QFile file(file_name);
+    file.open(QIODevice::ReadOnly);
+    QByteArray file_data = file.readAll();
+    file.close();
+
+    int count, result;
+    for (count = 0; count < file_data.size(); count++)
+    {
+        if (file_data.at(count) == '@')
+        {
+            break;
+        }
+    }
+    file_data.resize(count + 2);
+    result = char_to_int(file_data);
+
+    return (double)result;
+}
+
 bool GMM::startGMM(double pMFCC[][D], int pNum, bool pOption)
 {
     GMMStruct gmm;
     double result;
+
     if (pOption) {
         GMM_process(pMFCC, &gmm, pNum, M);
         GMM_identify(pMFCC, &result, &gmm, pNum, M);
+        GMM_set_file(result);
     }
     else {
         GMM_identify(pMFCC, &result, &gmm, pNum, M);
+        if (GMM_get_file() < (result * GMM_THRESHOLD))
+        {
+            // return false;
+        }
     }
 
     return true;
