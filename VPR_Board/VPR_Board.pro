@@ -19,13 +19,15 @@ SOURCES += main.cpp \
            recordvoice.cpp \
     mfcc.cpp \
     datapacket.cpp \
-    gmm.cpp
+    gmm.cpp \
+    rsa.cpp
 
 HEADERS += loginmanager.h \
            recordvoice.h \
     mfcc.h \
     datapacket.h \
-    gmm.h
+    gmm.h \
+    rsa.h
 
 FORMS   += loginmanager.ui
 

@@ -16,12 +16,14 @@ SOURCES += main.cpp \
            loginmanager.cpp \
     datapacket.cpp \
     filemanager.cpp \
-    sm4.cpp
+    sm4.cpp \
+    rsa.cpp
 
 HEADERS += loginmanager.h \
     datapacket.h \
     filemanager.h \
-    sm4.h
+    sm4.h \
+    rsa.h
 
 FORMS   += loginmanager.ui \
     filemanager.ui
