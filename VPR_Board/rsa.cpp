@@ -16,94 +16,6 @@ RSA::RSA(QObject *parent) : QObject(parent)
     create_rsa_key();
 }
 
-QString RSA::rsa_encrypt(QString p_plaintext)
-{
-    int c, k, temp;
-    int count = 0, count2 = 0;
-    char ciphertext_char[1024], ch;
-    struct slink *p, *p1, *p2, *h;
-    QByteArray plaintext_byte = p_plaintext.toLatin1();
-
-    h = p = p1 = p2 = (struct slink * )malloc(SLINKLEN);
-    h = NULL;
-
-    for (int i = 0; i < plaintext_byte.length(); i++)
-    {
-        c = plaintext_byte.at(i);
-        k = 0;
-        if(c < 0)
-        {
-            c = abs(c);
-            p1->bignum[KEYMAX - 2] = '0';
-        }
-        else
-        {
-            p1->bignum[KEYMAX - 2] = '1';
-        }
-
-        while((c / 10) != 0)
-        {
-            temp = c % 10;
-            c = c / 10;
-            p1->bignum[k] = temp;
-            k++;
-        }
-        p1->bignum[k] = c;
-        p1->bignum[KEYMAX - 1] = k + 1;
-        count++;
-        if(count == 1)
-        {
-            h = p1;
-        }
-        else
-        {
-            p2->next = p1;
-        }
-        p2 = p1;
-        p1 = (struct slink * )malloc(SLINKLEN);
-    }
-    p2->next = NULL;
-
-    p = p1 = (struct slink * )malloc(SLINKLEN);
-    p = h;
-    if(h)
-    {
-        do {
-            expmod(p->bignum, rsa_e, rsa_n, p1->bignum);
-            ch = p1->bignum[KEYMAX - 2];
-            ciphertext_char[count2++] = ch;
-
-            if ((p1->bignum[KEYMAX - 1] / 10) ==0)
-            {
-                ch = 0 + 48;
-                ciphertext_char[count2++] = ch;
-                ch = p1->bignum[KEYMAX - 1] + 48;
-                ciphertext_char[count2++] = ch;
-            }
-            else
-            {
-                ch = p1->bignum[KEYMAX - 1] / 10 + 48;
-                ciphertext_char[count2++] = ch;
-                ch = p1->bignum[KEYMAX - 1] % 10 + 48;
-                ciphertext_char[count2++] = ch;
-            }
-
-            for(int i = 0; i < p1->bignum[KEYMAX - 1]; i++)
-            {
-                ch = p1->bignum[i] + 48;
-                ciphertext_char[count2++] = ch;
-            }
-            p = p->next;
-            p1 = (struct slink * )malloc(SLINKLEN);
-        } while(p);
-    }
-
-    ciphertext_char[count2++] = '\0';
-    QString ciphertext(ciphertext_char);
-
-    return ciphertext;
-}
-
 QString RSA::rsa_decrypt(QString p_ciphertext)
 {
     char plaintext_char[1024], ch;
@@ -184,6 +96,28 @@ QString RSA::rsa_decrypt(QString p_ciphertext)
     plaintext_char[count2++] = '\0';
     QString plaintext(plaintext_char);
     return plaintext;
+}
+
+QByteArray RSA::get_e_byte()
+{
+    QByteArray e_byte;
+    e_byte.resize(rsa_e[99]);
+    for (int i = 0; i < rsa_e[99]; i++)
+    {
+        e_byte[i] = rsa_e[i];
+    }
+    return e_byte;
+}
+
+QByteArray RSA::get_n_byte()
+{
+    QByteArray n_byte;
+    n_byte.resize(rsa_n[99]);
+    for (int i = 0; i < rsa_n[99]; i++)
+    {
+        n_byte[i] = rsa_n[i];
+    }
+    return n_byte;
 }
 
 void RSA::create_rsa_key()

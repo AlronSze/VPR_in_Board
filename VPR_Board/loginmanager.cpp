@@ -13,7 +13,8 @@ LoginManager::LoginManager(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::LoginManager),
     m_file_index(0),
-    m_file_begin(false)
+    m_file_begin(false),
+    m_rsa_e_n_flag(false)
 {
     recordvoice = new RecordVoice();
     init_port();
@@ -21,6 +22,7 @@ LoginManager::LoginManager(QWidget *parent) :
     datapacket_r = new DataPacket();
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(delete_packet()));
+    rsa = new RSA();
     ui->setupUi(this);
 }
 
@@ -32,7 +34,8 @@ LoginManager::~LoginManager()
 void LoginManager::init_port(void)
 {
     serialport = new QSerialPort();
-    serialport->setPortName("/dev/ttyS1"); // For PC debug
+    // serialport->setPortName("/dev/ttyS1"); // For PC debug
+    serialport->setPortName("COM21");
     // serialport->setPortName("/dev/ttySAC1"); // For board
     serialport->open(QIODevice::ReadWrite);
     connect(serialport, SIGNAL(readyRead()), this, SLOT(read_port_data()));
@@ -86,8 +89,18 @@ void LoginManager::read_port_data(void)
     }
     else if (datapacket_r->get_command() == KEYEXCHANGE)
     {
-        // create_rsa();
-        write_port_data(datapacket_s.pack_data(KEYEXCHANGE, NULL));
+        if (!m_rsa_e_n_flag)
+        {
+            m_rsa_e_n_flag = true;
+            QByteArray e_byte = rsa->get_e_byte();
+            write_port_data(datapacket_s.pack_data(KEYEXCHANGE, e_byte));
+        }
+        else
+        {
+            m_rsa_e_n_flag = false;
+            QByteArray n_byte = rsa->get_n_byte();
+            write_port_data(datapacket_s.pack_data(KEYEXCHANGE, n_byte));
+        }
     }
     else if (datapacket_r->get_command() == LOGIN)
     {
@@ -180,9 +193,7 @@ bool LoginManager::start_login()
     QByteArray info = file.readAll();
     file.close();
 
-    // info = rsa_decrypt(info);
-
-    if (info == datapacket_r->get_byte_array())
+    if (info == rsa->rsa_decrypt(QString(datapacket_r->get_byte_array())).toLatin1())
     {
         /* For board
         MFCC mfcc;
@@ -233,7 +244,7 @@ bool LoginManager::start_reg()
     delete_dir_file();
 
     file.open(QIODevice::WriteOnly);
-    file.write(datapacket_r->get_byte_array());
+    file.write(rsa->rsa_decrypt(QString(datapacket_r->get_byte_array())).toLatin1());
     file.close();
 
     /* For board

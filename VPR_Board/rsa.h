@@ -43,8 +43,9 @@ private:
     int rsa_e[KEYMAX], rsa_m[KEYMAX], rsa_p1[KEYMAX], rsa_q1[KEYMAX];
 
 public:
-    QString rsa_encrypt(QString p_plaintext);
     QString rsa_decrypt(QString p_ciphertext);
+    QByteArray get_e_byte();
+    QByteArray get_n_byte();
 };
 
 #endif // RSA_H

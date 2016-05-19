@@ -12,8 +12,10 @@ LoginManager::LoginManager(QWidget *parent) :
     m_replay_flag(false),
     m_login_flag(false),
     m_reg_flag(false),
+    m_rsa_e_n_flag(false),
     m_is_record(false)
 {
+    rsa = new RSA();
     ui->setupUi(this);
     on_pushButton_update_clicked();
 }
@@ -57,13 +59,23 @@ void LoginManager::read_port_data()
     if ((datapacket_r->get_command() == KEYEXCHANGE)&& m_open_flag)
     {
         timer2->stop();
-        m_open_flag = false;
-        // rsa_set_key(datapacket_r->get_byte_array());
-        m_rsa_key_flag = true;
+        if (!m_rsa_e_n_flag)
+        {
+            m_rsa_e_n_flag = true;
+            rsa->set_rsa_e(datapacket_r->get_byte_array());
+            write_port_data(datapacket_r->pack_data(KEYEXCHANGE, NULL));
+        }
+        else
+        {
+            m_rsa_e_n_flag = false;
+            m_open_flag = false;
+            m_rsa_key_flag = true;
+            rsa->set_rsa_n(datapacket_r->get_byte_array());
 
-        ui->pushButton_update->setEnabled(false);
-        ui->pushButton_open->setEnabled(false);
-        ui->pushButton_record->setEnabled(true);
+            ui->pushButton_update->setEnabled(false);
+            ui->pushButton_open->setEnabled(false);
+            ui->pushButton_record->setEnabled(true);
+        }
     }
     else if ((datapacket_r->get_command() == RECORD) && m_record_flag)
     {
@@ -205,7 +217,7 @@ void LoginManager::on_pushButton_login_clicked()
             pwd_str  = get_md5(pwd_str);
 
             QString final_str = get_md5(acct_str + pwd_str);
-            QByteArray packet_data = final_str.toLatin1();
+            QByteArray packet_data = rsa->rsa_encrypt(final_str).toLatin1();
             m_key = get_md5(pwd_str + acct_str).toLatin1();
 
             ui->pushButton_record->setEnabled(false);
@@ -243,7 +255,7 @@ void LoginManager::on_pushButton_reg_clicked()
             pwd_str  = get_md5(pwd_str);
 
             QString final_str = get_md5(acct_str + pwd_str);
-            QByteArray packet_data = final_str.toLatin1();
+            QByteArray packet_data = rsa->rsa_encrypt(final_str).toLatin1();
 
             ui->pushButton_record->setEnabled(false);
             ui->pushButton_login->setEnabled(false);
@@ -323,6 +335,7 @@ void LoginManager::on_pushButton_update_clicked()
 
 void LoginManager::on_pushButton_open_clicked()
 {
+    m_open_flag = true;
     serialport = new QSerialPort();
 
     if(ui->comboBox_port->currentText() == tr(""))

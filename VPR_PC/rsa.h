@@ -37,14 +37,14 @@ private:
     void prime_random(int *p,int *q);
     void erand(int e[KEYMAX], int m[KEYMAX]);
     void rsad(int e[KEYMAX], int g[KEYMAX], int *d);
-    void create_rsa_key();
 
     int rsa_p[KEYMAX], rsa_q[KEYMAX], rsa_n[KEYMAX], rsa_d[KEYMAX];
     int rsa_e[KEYMAX], rsa_m[KEYMAX], rsa_p1[KEYMAX], rsa_q1[KEYMAX];
 
 public:
     QString rsa_encrypt(QString p_plaintext);
-    QString rsa_decrypt(QString p_ciphertext);
+    void set_rsa_e(QByteArray p_e_byte);
+    void set_rsa_n(QByteArray p_n_byte);
 };
 
 #endif // RSA_H

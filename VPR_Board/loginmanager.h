@@ -4,6 +4,7 @@
 #include "recordvoice.h"
 #include "datapacket.h"
 #include "mfcc.h"
+#include "rsa.h"
 
 #include <QMainWindow>
 #include <QTimer>
@@ -33,9 +34,11 @@ private:
     QSerialPort *serialport;
     QTimer      *timer;
     DataPacket  *datapacket_r;
+    RSA         *rsa;
     QString      m_file_name;
     unsigned int m_file_index;
     bool         m_file_begin;
+    bool         m_rsa_e_n_flag;
 
     void init_port(void);
     void write_port_data(QByteArray data);

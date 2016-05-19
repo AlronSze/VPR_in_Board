@@ -1,5 +1,6 @@
 #include "rsa.h"
 #include "time.h"
+#include <QDebug>
 
 RSA::RSA(QObject *parent) : QObject(parent)
 {
@@ -12,8 +13,28 @@ RSA::RSA(QObject *parent) : QObject(parent)
          this->rsa_d[i] = 0;
          this->rsa_e[i] = 0;
     }
+}
 
-    create_rsa_key();
+void RSA::set_rsa_e(QByteArray p_e_byte)
+{
+    int e_size = p_e_byte.length();
+    rsa_e[99] = e_size;
+
+    for (int i = 0; i < e_size; i++)
+    {
+        rsa_e[i] = p_e_byte.at(i);
+    }
+}
+
+void RSA::set_rsa_n(QByteArray p_n_byte)
+{
+    int n_size = p_n_byte.length();
+    rsa_n[99] = n_size;
+
+    for (int i = 0; i < n_size; i++)
+    {
+        rsa_n[i] = p_n_byte.at(i);
+    }
 }
 
 QString RSA::rsa_encrypt(QString p_plaintext)
@@ -102,101 +123,6 @@ QString RSA::rsa_encrypt(QString p_plaintext)
     QString ciphertext(ciphertext_char);
 
     return ciphertext;
-}
-
-QString RSA::rsa_decrypt(QString p_ciphertext)
-{
-    char plaintext_char[1024], ch;
-    int i = 0, j = 3, k, c, temp;
-    int count = 0, count2 = 0;
-    struct slink *h,*p1,*p2;
-
-    h = p1 = p2 = (struct slink * )malloc(SLINKLEN);
-    QByteArray ciphertext_byte = p_ciphertext.toLatin1();
-
-    for(int m = 0; m < ciphertext_byte.length(); m++)
-    {
-        c = ciphertext_byte.at(m);
-        if(j == 3)
-        {
-            p1->bignum[KEYMAX - 2] = c;
-            j--;
-        }
-        else if(j == 2)
-        {
-            temp = c - 48;
-            j--;
-        }
-        else if(j == 1)
-        {
-            p1->bignum[KEYMAX - 1] = temp * 10 + c - 48;
-            j--;
-        }
-        else if(j == 0)
-        {
-            p1->bignum[i] = c - 48;
-            i++;
-            if(i == p1->bignum[KEYMAX - 1])
-            {
-                i = 0;
-                j = 3;
-                count++;
-                if (count == 1)
-                {
-                    h = p1;
-                }
-                else
-                {
-                    p2->next = p1;
-                }
-                p2 = p1;
-                p1 = (struct slink * )malloc(SLINKLEN);
-            }
-        }
-    }
-    p2->next = NULL;
-
-    p2 = (struct slink * )malloc(SLINKLEN);
-    p1 = h;
-    k = 0;
-    if(h)
-    {
-        do
-        {
-            for(i = 0; i < KEYMAX; i++)
-            {
-                p2->bignum[i] = 0;
-            }
-            expmod(p1->bignum, rsa_d, rsa_n, p2->bignum);
-            temp = p2->bignum[0] + p2->bignum[1] * 10 + p2->bignum[2] * 100;
-            if (p2->bignum[KEYMAX - 2] == '0')
-            {
-                temp = 0 - temp;
-            }
-            ch = temp;
-            plaintext_char[count2++] = ch;
-            k++;
-            p1 = p1->next;
-            p2 = (struct slink * )malloc(SLINKLEN);
-        }while (p1);
-    }
-
-    plaintext_char[count2++] = '\0';
-    QString plaintext(plaintext_char);
-    return plaintext;
-}
-
-void RSA::create_rsa_key()
-{
-    prime_random(rsa_p, rsa_q);
-    mul(rsa_p, rsa_q, rsa_n);
-    mov(rsa_p, rsa_p1);
-    rsa_p1[0]--;
-    mov(rsa_q, rsa_q1);
-    rsa_q1[0]--;
-    mul(rsa_p1, rsa_q1, rsa_m);
-    erand(rsa_e, rsa_m);
-    rsad(rsa_e, rsa_m, rsa_d);
 }
 
 int RSA::cmp(int a1[KEYMAX], int a2[KEYMAX])

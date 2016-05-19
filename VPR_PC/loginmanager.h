@@ -4,6 +4,7 @@
 #include "filemanager.h"
 #include "datapacket.h"
 #include "sm4.h"
+#include "rsa.h"
 
 #include <QMainWindow>
 #include <QMessageBox>
@@ -48,6 +49,7 @@ private:
     FileManager *filemanager;
     QSerialPort *serialport;
     DataPacket  *datapacket_r;
+    RSA         *rsa;
     QTimer      *timer, *timer2;
     QByteArray  m_key;
 
@@ -57,6 +59,7 @@ private:
     bool m_login_flag;
     bool m_reg_flag;
     bool m_rsa_key_flag;
+    bool m_rsa_e_n_flag;
     bool m_is_record;
 
     void write_port_data(QByteArray data);
