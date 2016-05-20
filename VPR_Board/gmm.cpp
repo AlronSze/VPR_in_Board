@@ -155,7 +155,6 @@ int GMM::InitGMM(double X[][D], GMM_STRUCT * pGMM, int train_frame_num, int m)
                 gmm.cMatrix[i][j] = sum[i][j] / clusterSize[i] - pow(gmm.u[i][j], 2);
                 if (gmm.cMatrix[i][j] < 0)
                 {
-                    printf("Initial value of GMM`cMatrix < 0");
                     FreeGMM(&gmm);
                     free(clusterIndex);
                     free(clusterSize);
@@ -174,8 +173,6 @@ int GMM::InitGMM(double X[][D], GMM_STRUCT * pGMM, int train_frame_num, int m)
         }
         else
         {
-            printf("InitGMM: Decrease M and increase frame number");
-            printf("clusterSize[%d]: %d\n", i, clusterSize[i]);
             FreeGMM(&gmm);
             free(clusterIndex);
             free(clusterSize);
@@ -398,7 +395,6 @@ int GMM::BuildGMM(GMM_STRUCT * pGMM, GMM_STRUCT * Out, double X[][D], int train_
         }
         if (sum_pb == 0 || _isnan(sum_pb))
         {
-            printf("sum_ph = %lf", sum_pb);
             goto ERROR_RETURN;
         }
         for (j = 0; j < m; ++j)
@@ -431,8 +427,7 @@ int GMM::BuildGMM(GMM_STRUCT * pGMM, GMM_STRUCT * Out, double X[][D], int train_
             temp_gmm.cMatrix[j][k] -= pow(temp_gmm.u[j][k], 2);
             if (temp_gmm.cMatrix[j][k] <= 0)
             {
-                printf("BuildGMM: cMatrix <= 0");
-            ERROR_RETURN:
+ERROR_RETURN:
                 for (i = 0; i < train_frame_num; ++i)
                 {
                     free(p[i]);
@@ -487,8 +482,6 @@ int GMM::GMM_process(double X[][D], GMM_STRUCT * pGMM, int train_frame_num, int 
         first = second;
         second = temp;
         diff = GMM_diff(first, second);
-
-        printf("diff = %lf\n", diff);
     } while (diff >= DIFF_GMM_VALUE);
 
     FreeGMM(first);
@@ -516,7 +509,6 @@ int GMM::GMM_identify(double X[][D], double * value, GMM_STRUCT * pGMM, int fram
         }
         if (sum_pb <= 0)
         {
-            printf("后验概率sum_pb <= 0");
             return 0;
         }
         else
@@ -524,7 +516,6 @@ int GMM::GMM_identify(double X[][D], double * value, GMM_STRUCT * pGMM, int fram
             temp += log(sum_pb);
         }
     }
-    printf("max = %lf\n", temp);
 
     *value = temp;
     free(pb);
@@ -548,7 +539,7 @@ int GMM::char_to_int(QByteArray pChar)
 
 void GMM::GMM_set_file(double pResult)
 {
-    QString file_name = "/VPR/file/gmm.txt";
+    QString file_name = "/VPR/file/gmm";
     char result_str[32];
     if (QFile::exists(file_name))
     {
@@ -563,7 +554,7 @@ void GMM::GMM_set_file(double pResult)
 
 double GMM::GMM_get_file(void)
 {
-    QString file_name = "/VPR/file/gmm.txt";
+    QString file_name = "/VPR/file/gmm";
     QFile file(file_name);
     file.open(QIODevice::ReadOnly);
     QByteArray file_data = file.readAll();
@@ -597,7 +588,7 @@ bool GMM::startGMM(double pMFCC[][D], int pNum, bool pOption)
         GMM_identify(pMFCC, &result, &gmm, pNum, M);
         if (GMM_get_file() < (result * GMM_THRESHOLD))
         {
-            // return false;
+            return false;
         }
     }
 
