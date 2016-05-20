@@ -23,7 +23,7 @@ QByteArray DataPacket::get_byte_array(void)
 QByteArray DataPacket::pack_data(unsigned int command, QByteArray data_byte)
 {
     m_command = command;
-    m_magic   = m_command & 0xFFFFFFFF;
+    m_magic   = m_command ^ 0xFFFFFFFF;
 
     if (data_byte.isEmpty())
     {
@@ -74,7 +74,7 @@ unsigned char DataPacket::unpack_data(QByteArray bytes)
 
     if (m_scan_pointer >= 16)
     {
-        if ((m_command & 0xFFFFFFFF) == m_magic)
+        if ((m_command ^ 0xFFFFFFFF) == m_magic)
         {
             if (m_data_length > 0)
             {
