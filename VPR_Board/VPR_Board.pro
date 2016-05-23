@@ -5,8 +5,8 @@
 #-------------------------------------------------
 
 QT       += core gui
-QT       += serialport # For PC debug
-#CONFIG  += serialport # For board
+#QT       += serialport # For PC debug
+CONFIG  += serialport # For board
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 

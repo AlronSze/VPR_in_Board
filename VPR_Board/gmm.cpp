@@ -393,7 +393,7 @@ int GMM::BuildGMM(GMM_STRUCT * pGMM, GMM_STRUCT * Out, double X[][D], int train_
             pb[j] = pGMM->p[j] * GMM_density(pGMM, X[i], j);
             sum_pb += pb[j];
         }
-        if (sum_pb == 0 || _isnan(sum_pb))
+        if (sum_pb == 0 || isnan(sum_pb))
         {
             goto ERROR_RETURN;
         }

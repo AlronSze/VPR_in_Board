@@ -4,8 +4,8 @@
 #include <QTimer>
 #include <unistd.h>
 #include <fcntl.h>
-// #include <sys/ioctl.h>        // For board
-// #include <linux/soundcard.h>  // For board
+#include <sys/ioctl.h>        // For board
+#include <linux/soundcard.h>  // For board
 
 #define LENGTH    5
 #define RATE      8000
@@ -52,7 +52,7 @@ void RecordVoice::init_record(void)
 
 void RecordVoice::start_record(void)
 {
-    /* For board
+    // For board
     int i, arg;
 
     m_fd_dev_r= open("/dev/dsp", O_RDONLY, 0777);
@@ -101,12 +101,11 @@ void RecordVoice::start_record(void)
 
     close(m_fd_f);
     close(m_fd_dev_r);
-    */
 }
 
 void RecordVoice::play_record(void)
 {
-    /* For board
+    // For board
     int i, arg;
 
     m_fd_dev_w = open("/dev/dsp", O_WRONLY, 0777);
@@ -151,5 +150,4 @@ void RecordVoice::play_record(void)
 
     close(m_fd_f);
     close(m_fd_dev_w);
-    */
 }
