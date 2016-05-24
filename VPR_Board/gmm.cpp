@@ -583,8 +583,11 @@ bool GMM::GMM_import_struct(void)
     }
 
     FILE *f_in;
+    int temp_m;
     f_in = fopen("/VPR/file/gmm", "rb");
-    fread(&m_gmm.m, sizeof(m_gmm.m), 1, f_in);
+    fread(&temp_m, sizeof(temp_m), 1, f_in);
+    InitGMMStruct(&m_gmm, temp_m);
+    CallocGMM(&m_gmm);
     fread(m_gmm.p, sizeof(m_gmm.p[0]), m_gmm.m, f_in);
     for (int i = 0; i < m_gmm.m; i++)
     {
