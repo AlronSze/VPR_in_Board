@@ -539,7 +539,7 @@ int GMM::char_to_int(QByteArray pChar)
 
 void GMM::GMM_set_file(double pResult)
 {
-    QString file_name = "/VPR/file/gmm";
+    QString file_name = "/VPR/file/gmm_id";
     char result_str[32];
     if (QFile::exists(file_name))
     {
@@ -554,7 +554,7 @@ void GMM::GMM_set_file(double pResult)
 
 double GMM::GMM_get_file(void)
 {
-    QString file_name = "/VPR/file/gmm";
+    QString file_name = "/VPR/file/gmm_id";
     QFile file(file_name);
     file.open(QIODevice::ReadOnly);
     QByteArray file_data = file.readAll();
@@ -574,18 +574,70 @@ double GMM::GMM_get_file(void)
     return (double)result;
 }
 
+bool GMM::GMM_import_struct(void)
+{
+    QString file_name = "/VPR/file/gmm";
+    if (!QFile::exists(file_name))
+    {
+        return false;
+    }
+
+    FILE *f_in;
+    f_in = fopen("/VPR/file/gmm", "rb");
+    fread(&m_gmm.m, sizeof(m_gmm.m), 1, f_in);
+    fread(m_gmm.p, sizeof(m_gmm.p[0]), m_gmm.m, f_in);
+    for (int i = 0; i < m_gmm.m; i++)
+    {
+        fread(m_gmm.u[i], sizeof(m_gmm.u[0][0]), D, f_in);
+    }
+    for (int i = 0; i < m_gmm.m; i++)
+    {
+        fread(m_gmm.cMatrix[i], sizeof(m_gmm.cMatrix[0][0]), D, f_in);
+    }
+    fclose(f_in);
+
+    return true;
+}
+
+void GMM::GMM_export_struct(void)
+{
+    QString file_name = "/VPR/file/gmm";
+    if (QFile::exists(file_name))
+    {
+        QFile::remove(file_name);
+    }
+
+    FILE *f_out;
+    f_out = fopen("/VPR/file/gmm", "wb");
+    fwrite(&m_gmm.m, sizeof(m_gmm.m), 1, f_out);
+    fwrite(m_gmm.p, sizeof(m_gmm.p[0]), m_gmm.m, f_out);
+    for (int i = 0; i < m_gmm.m; ++i)
+    {
+        fwrite(m_gmm.u[i], sizeof(m_gmm.u[0][0]), D, f_out);
+    }
+    for (int i = 0; i < m_gmm.m; ++i)
+    {
+        fwrite(m_gmm.cMatrix[i], sizeof(m_gmm.cMatrix[0][0]), D, f_out);
+    }
+    fclose(f_out);
+}
+
 bool GMM::startGMM(double pMFCC[][D], int pNum, bool pOption)
 {
-    GMMStruct gmm;
     double result;
 
     if (pOption) {
-        GMM_process(pMFCC, &gmm, pNum, M);
-        GMM_identify(pMFCC, &result, &gmm, pNum, M);
+        GMM_process(pMFCC, &m_gmm, pNum, M);
+        GMM_identify(pMFCC, &result, &m_gmm, pNum, M);
         GMM_set_file(result);
+        GMM_export_struct();
     }
     else {
-        GMM_identify(pMFCC, &result, &gmm, pNum, M);
+        if (!GMM_import_struct())
+        {
+            return false;
+        }
+        GMM_identify(pMFCC, &result, &m_gmm, pNum, M);
         if (GMM_get_file() < (result * GMM_THRESHOLD))
         {
             return false;

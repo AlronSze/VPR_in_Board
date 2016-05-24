@@ -42,7 +42,11 @@ private:
     double GMM_density(GMM_STRUCT * pGMM, double * X, int index);
     void GMM_set_file(double pResult);
     double GMM_get_file(void);
+    bool GMM_import_struct(void);
+    void GMM_export_struct(void);
     int char_to_int(QByteArray pChar);
+
+    GMMStruct m_gmm;
 
 public:
     bool startGMM(double pMFCC[][D], int pNum,bool pOption);
