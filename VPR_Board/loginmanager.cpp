@@ -199,18 +199,32 @@ bool LoginManager::start_login()
     {
         // For board
         MFCC mfcc;
-        mfcc.StartMFCC(false);
+        if (!mfcc.StartMFCC(false))
+        {
+            QMessageBox *messageBox = new QMessageBox(QMessageBox::Warning, tr("Warning"), tr("Login Voiceprint Error!"), NULL, this);
+            messageBox->show();
+            QTimer *timer = new QTimer(this);
+            connect(timer, SIGNAL(timeout()), messageBox, SLOT(close()));
+            timer->start(2000);
+            return false;
+        }
+
+        QString voice_file_name = "/VPR/sound.wav";
+        if (QFile::exists(voice_file_name))
+        {
+            QFile::remove(voice_file_name);
+        }
 
         QMessageBox *messageBox = new QMessageBox(QMessageBox::Information, tr("Information"), tr("Login successful!"), NULL, this);
         messageBox->show();
         QTimer *timer = new QTimer(this);
         connect(timer, SIGNAL(timeout()), messageBox, SLOT(close()));
         timer->start(2000);
-        return true;
+        return false;
     }
     else
     {
-        QMessageBox *messageBox = new QMessageBox(QMessageBox::Warning, tr("Warning"), tr("Login Error!"), NULL, this);
+        QMessageBox *messageBox = new QMessageBox(QMessageBox::Warning, tr("Warning"), tr("Login Password Error!"), NULL, this);
         messageBox->show();
         QTimer *timer = new QTimer(this);
         connect(timer, SIGNAL(timeout()), messageBox, SLOT(close()));
@@ -250,7 +264,21 @@ bool LoginManager::start_reg()
 
     // For board
     MFCC mfcc;
-    mfcc.StartMFCC(true);
+    if (!mfcc.StartMFCC(true))
+    {
+        QMessageBox *messageBox = new QMessageBox(QMessageBox::Warning, tr("Warning"), tr("GMM train error,\nPlease try record again!"), NULL, this);
+        messageBox->show();
+        QTimer *timer = new QTimer(this);
+        connect(timer, SIGNAL(timeout()), messageBox, SLOT(close()));
+        timer->start(2000);
+        return false;
+    }
+
+    QString voice_file_name = "/VPR/sound.wav";
+    if (QFile::exists(voice_file_name))
+    {
+        QFile::remove(voice_file_name);
+    }
 
     QMessageBox *messageBox = new QMessageBox(QMessageBox::Information, tr("Information"), tr("Register successful!"), NULL, this);
     messageBox->show();

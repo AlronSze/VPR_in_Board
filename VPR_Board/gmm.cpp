@@ -630,7 +630,10 @@ bool GMM::startGMM(double pMFCC[][D], int pNum, bool pOption)
     double result;
 
     if (pOption) {
-        GMM_process(pMFCC, &m_gmm, pNum, M);
+        if (!GMM_process(pMFCC, &m_gmm, pNum, M))
+        {
+            return false;
+        }
         GMM_identify(pMFCC, &result, &m_gmm, pNum, M);
         GMM_set_file(result);
         GMM_export_struct();

@@ -13,7 +13,8 @@ LoginManager::LoginManager(QWidget *parent) :
     m_login_flag(false),
     m_reg_flag(false),
     m_rsa_e_n_flag(false),
-    m_is_record(false)
+    m_is_record(false),
+    m_rsa_key_flag(false)
 {
     rsa = new RSA();
     ui->setupUi(this);

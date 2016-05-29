@@ -5,7 +5,7 @@
 #include <QByteArray>
 
 #define D                  28
-#define M                  16
+#define M                  4
 #define _2PI               6.2831853L
 #define DIFF_GMM_VALUE     1
 #define DIFF_CENTER_VALUE  1
