@@ -7,8 +7,8 @@ Voiceprint recognition for files access in Mini2440.
 
 Directory Structure:
 ------------------------
-    Document  : Storage development documentations.
-    VPR_Board : Storage VPR in board source code.
-    VPR_PC    : Storage VPR in PC source code.
+    Document  : Store developing documentations.
+    VPR_Board : Store VPR in board source code.
+    VPR_PC    : Store VPR in PC source code.
     CalMel.py : A python file to calculate Mel coefficients.
 	
