@@ -220,7 +220,7 @@ bool LoginManager::start_login()
         QTimer *timer = new QTimer(this);
         connect(timer, SIGNAL(timeout()), messageBox, SLOT(close()));
         timer->start(2000);
-        return false;
+        return true;
     }
     else
     {
